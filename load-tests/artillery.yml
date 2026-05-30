@@ -1,0 +1,12 @@
+config:
+  target: "http://127.0.0.1:5001"
+  phases:
+    - duration: 30
+      arrivalRate: 10
+      rampTo: 50
+      name: "Spike load"
+scenarios:
+  - name: "Load excalidraw main page"
+    flow:
+      - get:
+          url: "/"

@@ -1,0 +1,69 @@
+name: Testing Pipeline
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
+
+jobs:
+  unit-and-integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          cache: 'yarn'
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Run Unit and Integration Tests
+        run: yarn test:app --watch=false
+
+  e2e-tests:
+    runs-on: ubuntu-latest
+    needs: unit-and-integration
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+      - name: Install dependencies for App
+        run: yarn install --frozen-lockfile
+      - name: Build App
+        run: yarn build
+      - name: Install E2E dependencies
+        working-directory: ./e2e-tests
+        run: npm install
+      - name: Install Playwright Browsers
+        working-directory: ./e2e-tests
+        run: npx playwright install --with-deps
+      - name: Start server in background
+        run: yarn start:production &
+      - name: Wait for server to be ready
+        run: npx wait-on http://127.0.0.1:5001
+      - name: Run E2E tests
+        working-directory: ./e2e-tests
+        run: npm test
+
+  load-tests:
+    runs-on: ubuntu-latest
+    needs: unit-and-integration
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+      - name: Install dependencies for App
+        run: yarn install --frozen-lockfile
+      - name: Build App
+        run: yarn build
+      - name: Start server in background
+        run: yarn start:production &
+      - name: Wait for server to be ready
+        run: npx wait-on http://127.0.0.1:5001
+      - name: Run Load Test with Artillery
+        run: npx artillery run load-tests/artillery.yml
