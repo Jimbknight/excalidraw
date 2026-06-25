@@ -41,4 +41,50 @@ test.describe('Excalidraw E2E', () => {
     // Select the whole element (it should already be selected after Escape)
     // We just verify it doesn't crash during this E2E flow.
   });
+
+  test('should undo and redo a rectangle using toolbar buttons', async ({ page }) => {
+    await page.goto('/');
+    await expect(page).toHaveTitle(/Excalidraw/);
+
+    await page.keyboard.press('r');
+    await page.mouse.move(350, 350);
+    await page.mouse.down();
+    await page.mouse.move(450, 450);
+    await page.mouse.up();
+
+    const undoButton = page.locator('[data-testid="button-undo"]');
+    const redoButton = page.locator('[data-testid="button-redo"]');
+
+    await expect(undoButton).toBeVisible();
+    await expect(undoButton).toBeEnabled();
+    await expect(redoButton).toBeVisible();
+
+    await undoButton.click();
+    await expect(redoButton).toBeEnabled();
+
+    await redoButton.click();
+  });
+
+  test('should clear the canvas with the clear canvas button', async ({ page }) => {
+    await page.goto('/');
+    await expect(page).toHaveTitle(/Excalidraw/);
+
+    await page.keyboard.press('r');
+    await page.mouse.move(300, 300);
+    await page.mouse.down();
+    await page.mouse.move(380, 380);
+    await page.mouse.up();
+
+    await page.locator('[data-testid="main-menu-trigger"]').click();
+    const clearCanvasButton = page.locator('[data-testid="clear-canvas-button"]');
+    await expect(clearCanvasButton).toBeVisible();
+    await clearCanvasButton.click();
+
+    const confirmButton = page.getByRole('button', { name: /confirm/i });
+    await expect(confirmButton).toBeVisible();
+    await confirmButton.click();
+
+    const undoButton = page.locator('[data-testid="button-undo"]');
+    await expect(undoButton).toBeEnabled();
+  });
 });
