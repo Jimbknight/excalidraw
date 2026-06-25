@@ -4,7 +4,7 @@
 
 **Team:**
 - Bernhard Steps
-- 
+- Daniel Krummenacker
 
 **KI-Tools die wir verwendet haben:**
 - Antigravity (Google DeepMind Agent) – hat uns beim Analysieren der Codebasis und evaluieren was wir machen könnten geholfen.
@@ -25,10 +25,10 @@ Pro Person waren mindestens 11 Tests gefordert. So haben wir das aufgeteilt:
 
 | Kategorie | Anzahl | Wo? |
 |---|---|---|
-| Unit Tests | 5 | `packages/math/tests/triangle.test.ts` |
-| Integration Tests | 3 | `packages/excalidraw/tests/customIntegration.test.tsx` |
-| E2E Tests | 2 | `e2e-tests/tests/excalidraw.spec.ts` |
-| Load Test | 1 | `load-tests/artillery.yml` |
+| Unit Tests | 10 | `packages/math/tests/triangle.test.ts` & `packages/math/tests/polygon.test.ts`|
+| Integration Tests | 6 | `packages/excalidraw/tests/customIntegration.test.tsx` |
+| E2E Tests | 4 | `e2e-tests/tests/excalidraw.spec.ts` |
+| Load Test | 2 | `load-tests/artillery.yml` |
 
 ### Welche Frameworks haben wir benutzt?
 
@@ -88,7 +88,19 @@ Hier testen wir die Funktion `triangleIncludesPoint()` aus dem Math-Package. Die
 | 4 | Punkt genau auf einem Eckpunkt | Gibt `true` zurück (Randfall) |
 | 5 | Dreieck mit negativen Koordinaten | Funktioniert auch mit negativen Werten |
 
-### Integration Tests (3 Stück) – `customIntegration.test.tsx`
+### Unit Tests (5 Stück) – `polygon.test.ts`
+
+Hier erweitern wir die geometrischen Tests auf komplexere Formen: Polygone. Während Dreiecke nur drei Punkte haben, können Polygone beliebig viele Punkte haben – und damit realistische Formen darstellen. Die Funktionen `polygonFromPoints()`, `polygonIncludesPoint()` und `pointOnPolygon()` sind zentral für Hit-Testing bei komplexeren Shapes. Wenn jemand z.B. eine Freihand-Linie oder ein unregelmäßiges Polygon zeichnet, wird diese Form als Polygon gespeichert. Dann muss die App schnell prüfen können, ob ein Mausklick diese Form getroffen hat – genau das testen wir hier. Das ist essentiell für die User Experience, sonst könnte man die gezeichneten Formen nicht anfassen oder selektieren.
+
+| # | Test | Was wird geprüft? |
+|---|---|---|
+| 1 | Polygon wird geschlossen | `polygonFromPoints()` erzeugt eine geschlossene Form |
+| 2 | Punkt im Inneren erkannt | `polygonIncludesPoint()` gibt `true` zurück |
+| 3 | Punkt außerhalb erkannt | `polygonIncludesPoint()` gibt `false` zurück |
+| 4 | Winding-Verfahren funktioniert | `polygonIncludesPointNonZero()` unterscheidet innen/außen |
+| 5 | Punkt auf Rand erkannt | `pointOnPolygon()` gibt `true` für Randpunkte zurück |
+
+### Integration Tests (6 Stück) – `customIntegration.test.tsx`
 
 Bei den Integration Tests geht es darum, ob mehrere Teile der App zusammenspielen. Wir rendern die ganze Excalidraw-Komponente und simulieren dann Nutzer-Aktionen:
 
@@ -97,8 +109,11 @@ Bei den Integration Tests geht es darum, ob mehrere Teile der App zusammenspiele
 | 1 | Rechteck zeichnen | Nach dem Zeichnen existiert ein Element vom Typ "rectangle" im App-State |
 | 2 | Hintergrundfarbe ändern | Ein neues Element übernimmt die geänderte Farbe |
 | 3 | Linienfarbe (Stroke) ändern | Die Stroke-Color wird korrekt auf neue Elemente angewendet |
+| 4 | Rechteck erstellen und verifizieren | Element wird korrekt im App-State gespeichert |
+| 5 | Farben von mehreren Elementen ändern | Mehrere Elemente können gleichzeitig neue Farben bekommen |
+| 6 | Element löschen und Undo | Gelöschte Elemente können rückgängig gemacht werden |
 
-### E2E Tests (2 Stück) – `excalidraw.spec.ts`
+### E2E Tests (4 Stück) – `excalidraw.spec.ts`
 
 Die E2E Tests fahren einen echten Browser hoch und interagieren mit der laufenden App:
 
@@ -106,8 +121,10 @@ Die E2E Tests fahren einen echten Browser hoch und interagieren mit der laufende
 |---|---|---|
 | 1 | Rechteck auf Canvas zeichnen | Seite lädt, Titel stimmt, Rechteck-Tool + Maus-Interaktion funktionieren |
 | 2 | Text-Element erstellen | Text-Tool auswählen, Text eingeben, ohne Absturz abschließen |
+| 3 | Undo/Redo Funktionalität | Zeichnen, rückgängig machen, wiederherstellen funktionieren im echten Browser |
+| 4 | Canvas leeren über Menü | Clear-Canvas-Button öffnet Menü, Dialog-Bestätigung löscht alle Elemente |
 
-### Load Test (1 Stück) – `artillery.yml`
+### Load Test (2 Stück) – `artillery.yml`
 
 Siehe nächster Abschnitt.
 
@@ -120,6 +137,8 @@ Siehe nächster Abschnitt.
 Wir haben einen **Spike Test** gemacht. Die Frage war: Was passiert, wenn plötzlich sehr viele Leute gleichzeitig auf Excalidraw zugreifen – z.B. weil es irgendwo viral geht?
 
 Da Excalidraw eine Client-Side App ist (die ganze Logik läuft im Browser), geht es beim Server eigentlich nur darum, die statischen Dateien (HTML, CSS, JavaScript) auszuliefern. Genau das testen wir: Schafft der Server das auch unter Last?
+
+Ein zusätzliches Last-Szenario testet die Auslieferung von statischen Assets unter erhöhter Last. Dabei werden zusätzliche Dateien wie `/favicon.ico`, `/service-worker.js` und `/robots.txt` angefordert, um eine realistischere Lastsituation abzubilden.
 
 **Die Konfiguration:**
 - Dauer: 30 Sekunden
