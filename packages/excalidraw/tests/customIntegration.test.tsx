@@ -4,6 +4,7 @@ import { Keyboard, Pointer, UI } from "./helpers/ui";
 import { fireEvent, render, waitFor } from "./test-utils";
 import { getTextEditor, updateTextEditor } from "./queries/dom";
 import { KEYS } from "@excalidraw/common";
+import type { ExcalidrawTextElement } from "@excalidraw/element/types";
 
 const { h } = window;
 
@@ -100,7 +101,8 @@ describe("customIntegration (Projektarbeit)", () => {
     await waitFor(() => {
       expect(h.elements.length).toBe(1);
       expect(h.elements[0].type).toBe("text");
-      expect(h.elements[0].text).toContain("Integration text");
+      const textElement = h.elements[0] as ExcalidrawTextElement;
+      expect(textElement.text).toContain("Integration text");
     });
   });
 
