@@ -41,9 +41,9 @@ jobs:
         working-directory: ./e2e-tests
         run: npx playwright install --with-deps
       - name: Start server in background
-        run: yarn start:production &
+        run: yarn start &
       - name: Wait for server to be ready
-        run: npx wait-on http://127.0.0.1:5001
+        run: npx wait-on http://127.0.0.1:3000
       - name: Run E2E tests
         working-directory: ./e2e-tests
         run: npm test
@@ -62,8 +62,8 @@ jobs:
       - name: Build App
         run: yarn build
       - name: Start server in background
-        run: yarn start:production &
+        run: yarn start &
       - name: Wait for server to be ready
-        run: npx wait-on http://127.0.0.1:5001
+        run: npx wait-on http://127.0.0.1:3000
       - name: Run Load Test with Artillery
         run: npx artillery run load-tests/artillery.yml
