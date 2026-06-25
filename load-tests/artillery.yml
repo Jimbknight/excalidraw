@@ -10,3 +10,12 @@ scenarios:
     flow:
       - get:
           url: "/"
+
+  - name: "Load additional static assets"
+    flow:
+      - get:
+          url: "/favicon.ico"
+      - get:
+          url: "/service-worker.js"
+      - get:
+          url: "/robots.txt"
